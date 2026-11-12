@@ -1,63 +1,50 @@
 # AHRS Sensor-Fusion Benchmark
 
-This Python benchmark compares gyro integration, a quaternion complementary filter, Mahony, and Madgwick against optical motion capture. It uses six recordings from the public BROAD dataset.
+How much does an accelerometer help an attitude estimate, and what happens when the sensor gets bumped or starts vibrating?
 
-On the four undisturbed trials, Madgwick lowered tilt RMS error from 9.45° to 1.67° (82.4%) across 169,828 motion samples. The complementary filter had the lowest full-orientation RMS error at 31.30°. The gyro and accelerometer provide no absolute heading reference, so yaw can drift after initialization.
+This Python project compares three attitude filters (complementary, Mahony, and Madgwick) with a gyro-only baseline. It replays six public [BROAD](https://github.com/dlaidig/broad) IMU recordings offline and checks each estimate against optical motion capture.
 
-![Two rotating wireframe cubes showing the optical reference and Madgwick estimate](results/orientation_demo.gif)
+![Optical reference on the left and Madgwick estimate on the right](results/orientation_demo.gif)
 
-*Trial 01, first eight seconds of labeled motion. Optical reference on the left, Madgwick on the right. The orange face marks body +X.*
+*The first eight seconds of motion in trial 01. The orange face marks the sensor's +X axis.*
 
-## Results
+## What the data showed
 
-| Filter | Full orientation RMS | Full orientation max | Tilt RMS | Tilt max |
+On the four undisturbed runs, Madgwick brought tilt RMS error down from **9.45° to 1.67°** compared with gyro-only integration, an 82.4% reduction across 169,828 motion samples. The complementary filter had the lowest full-orientation RMS error at 31.30°. Tilt measures how far off the estimated vertical is. Full-orientation error also includes heading, which can drift when the only inputs are a gyro and accelerometer.
+
+| Filter | Tilt RMS | Tilt max | Full orientation RMS | Full orientation max |
 | --- | ---: | ---: | ---: | ---: |
-| Gyro-only | 32.67° | 72.16° | 9.45° | 28.64° |
-| Complementary | **31.30°** | 87.13° | 7.78° | 77.49° |
-| Mahony | 38.80° | 164.57° | 9.27° | 59.52° |
-| Madgwick | 31.36° | **70.77°** | **1.67°** | **9.27°** |
+| Gyro-only | 9.45° | 28.64° | 32.67° | 72.16° |
+| Complementary | 7.78° | 77.49° | 31.30° | 87.13° |
+| Mahony | 9.27° | 59.52° | 38.80° | 164.57° |
+| Madgwick | 1.67° | 9.27° | 31.36° | 70.77° |
 
-![Bar charts comparing full-orientation and tilt RMS error for the four filters](results/rms_comparison.svg)
+![Tilt and full-orientation RMS error by filter](results/rms_comparison.svg)
 
-| BROAD trial | Motion samples | Gyro-only tilt RMS | Complementary | Mahony | Madgwick |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 01 · Slow rotation | 35,855 | 17.31° | 0.62° | **0.56°** | 0.71° |
-| 06 · Fast rotation | 34,882 | 2.62° | 1.55° | 1.84° | **1.04°** |
-| 15 · Fast translation | 30,140 | 10.45° | 18.24° | 21.79° | **3.34°** |
-| 19 · Slow combined motion | 68,951 | 3.59° | 1.45° | 1.43° | **1.06°** |
+Fast translation was the toughest of the four runs for complementary and Mahony. The accelerometer picks up linear acceleration as well as gravity, so a fast translation can look like a change in tilt. During the first 25 seconds of rest in trial 01, Madgwick's tilt error grew at 0.16°/min versus 4.99°/min for gyro-only. Its full-orientation error still grew at 28.15°/min.
 
-Fast translation was the hardest tilt case for the complementary and Mahony filters at these gains. An accelerometer measures specific force, so sustained translational acceleration can look like a change in tilt. During the first 25 seconds of rest in trial 01, the fitted tilt-error slope dropped from **4.99°/min** for gyro-only to **0.16°/min** for Madgwick. Its full-orientation error still increased at **28.15°/min** in that window.
+[Per-trial results and timings](results/per_trial.csv) · [Pooled results](results/pooled.csv) · [Roll, pitch, and yaw plots](results/tracking.svg) · [Drift plot](results/static_drift.svg)
 
-On the benchmark machine, median replay cost per update ranged from 2.95–3.06 µs for gyro-only, 5.87–6.00 µs for Mahony, 6.68–6.78 µs for Madgwick, and 8.00–8.10 µs for complementary across the four trials. These figures describe the Python implementations on Windows. An STM32 port would need its own timing measurements.
+## Bumps, vibration, and dropped samples
 
-- [Roll, pitch, and yaw tracking for trial 01](results/tracking.svg)
-- [Static drift curves for trial 01](results/static_drift.svg)
-- [Per-trial error, drift, and desktop replay timings](results/per_trial.csv)
-- [Pooled metrics](results/pooled.csv) and [run configuration](results/run.json)
+BROAD also has a trial where the researchers tapped the IMU and another where they attached a vibrating phone to the fixture. Across those two recordings (68,704 motion samples), Mahony had the lowest pooled tilt error. Complementary had the lowest tilt error on the phone trial alone. Both runs used the same gains as the four undisturbed runs.
 
-## Disturbance and sample-rate tests
-
-The same gains were replayed on two additional BROAD recordings with 68,704 scored motion samples. In trial 24 the researchers tapped the IMU, causing acceleration spikes. In trial 26 they attached a vibrating phone to the fixture. Both have optical reference orientation.
-
-| Filter | Tapping tilt RMS | Phone vibration tilt RMS | Pooled tilt RMS | Pooled full-orientation RMS |
+| Filter | Tapping tilt RMS | Phone vibration tilt RMS | Pooled tilt RMS | Pooled full orientation RMS |
 | --- | ---: | ---: | ---: | ---: |
 | Gyro-only | 45.47° | 37.10° | 41.51° | 42.73° |
-| Complementary | 1.26° | **1.66°** | 1.47° | 8.75° |
-| Mahony | **0.80°** | 1.74° | **1.35°** | **7.57°** |
+| Complementary | 1.26° | 1.66° | 1.47° | 8.75° |
+| Mahony | 0.80° | 1.74° | 1.35° | 7.57° |
 | Madgwick | 1.26° | 3.42° | 2.57° | 9.17° |
 
-Madgwick had the lowest pooled tilt error on the four original trials. Mahony led on the two disturbance trials, and complementary led on the phone-vibration trial alone.
+The rate test replayed the fast-rotation and phone-vibration recordings at 285.71, 142.86, and 71.43 Hz by keeping every sample, every second sample, or every fourth sample. All three replays were scored at the same optical timestamps. On fast rotation, Madgwick's tilt RMS was 1.04°, 0.81°, and 1.14° at those rates. The test drops samples without anti-alias filtering, so the results describe this replay setup.
 
-A sample-rate sweep kept every first, second, or fourth IMU reading from the fast-rotation and phone-vibration trials. Each replay used its own timestep and was scored at identical optical timestamps. Madgwick tilt RMS on fast rotation was 1.04° at 285.71 Hz, 0.81° at 142.86 Hz, and 1.14° at 71.43 Hz. This experiment measures sensitivity to dropping samples. It applies no anti-aliasing filter, so it cannot predict a physical IMU's behavior at those rates.
+One unit test simulates an IMU sitting still with a 0.5°/s gyro bias. After 60 seconds, Mahony's orientation error is below 0.05° with bias around a horizontal axis. The same bias around the vertical axis gives 30° of yaw drift.
 
-A synthetic stationary test injects 0.5°/s of gyro bias. Mahony brings orientation error below 0.05° after 60 seconds with a horizontal-axis bias. With the same bias about the vertical axis, it accumulates 30° of heading error over 60 seconds.
-
-- [Disturbance results by trial](results/stress_per_trial.csv) and [pooled metrics](results/stress_pooled.csv)
-- [Sample-rate sweep for all four filters](results/sample_rate_sweep.csv)
+[Disturbance results](results/stress_per_trial.csv) · [Pooled disturbance results](results/stress_pooled.csv) · [Sample-rate results](results/sample_rate_sweep.csv)
 
 ## Run it
 
-Use Python 3.10 or newer. All six trial files are included. If `python` opens the Microsoft Store on Windows, use `py` in the commands below.
+Use Python 3.10 or newer. The six recordings are included.
 
 ```powershell
 python -m venv .venv
@@ -67,28 +54,20 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m unittest discover -s tests
 ```
 
-On macOS or Linux, use `.venv/bin/python` in place of the Windows executable path. Running the benchmark regenerates the CSVs, plots, and GIF in `results/`. Use `--out my-results` to write elsewhere, `--download` to recover missing bundled recordings, or `--trial path/to/trial.hdf5` to replay a different BROAD file. Repeat `--trial` for multiple files.
+If Windows opens the Microsoft Store, use `py -m venv .venv` for the first command. On macOS or Linux, use `.venv/bin/python` for the other commands.
 
-## Filter updates
+The scripts write to `results/` by default. Use `--out my-results` to keep a separate run or `--download` to restore missing recordings. To run a different BROAD file, pass `--trial path/to/trial.hdf5` to `benchmark.py`. Repeat `--trial` for multiple files.
 
-| Method | Update |
-| --- | --- |
-| Gyro-only | Integrate measured body angular rate using the quaternion derivative, then normalize. |
-| Complementary | Predict with the gyro and apply a fraction of the shortest rotation that aligns predicted up with measured up. The correction weight is `1 - exp(-dt / tau)`, with `tau = 1.0 s`. |
-| Mahony | Use the cross product of measured and predicted up for proportional rate correction and integrate it to estimate gyro bias. Gains are `kp = 1.0` and `ki = 0.10`. |
-| Madgwick | Compute the gradient of the gravity-alignment residual and subtract its normalized direction from the gyro quaternion derivative. The gradient gain is `beta = 0.035`. |
+## How the benchmark works
 
-The four updates are implemented in [filters.py](ahrs/filters.py) using Python arithmetic. NumPy computes metrics and transforms, and h5py reads the trial files.
+Every filter starts at the first valid optical pose, including heading. From there it gets IMU samples at the recording's native rate (2000/7 Hz, about 286 Hz). The optical pose is used for scoring after initialization. Filters keep running through gaps in motion capture. The motion scores use samples that BROAD labels as moving and that have a valid reference. Pooled RMS is weighted by the number of scored samples.
 
-## Evaluation protocol
+The [filter code](ahrs/filters.py) uses Hamilton quaternions. Gyro-only integrates angular rate. Complementary nudges the estimate toward the accelerometer's vertical direction with a one-second time constant. Mahony uses gravity feedback and estimates gyro bias (`kp = 1.0`, `ki = 0.10`). Madgwick uses the gradient of the gravity error to correct the quaternion derivative (`beta = 0.035`). NumPy handles the metrics and transforms, and h5py reads the data.
 
-- Replay the gyro in rad/s and accelerometer in m/s² at the source rate of 2000/7 Hz, about 286 Hz. The source authors synchronized and aligned the optical quaternions to the IMU. Each filter starts at the same first valid optical pose, including heading. After initialization, optical data is used for evaluation only. The baseline uses gyro readings, and the three fusion filters also use accelerometer readings.
-- Evaluate on samples labeled as motion that also have a valid optical pose. The filters continue through optical gaps. Report the root mean square and maximum over the scored samples. The pooled RMS is sample-weighted across trials. Full-orientation error uses the shortest quaternion distance, and tilt error uses the angle between the two predicted world-up directions expressed in body coordinates.
-- Estimate static drift by fitting a straight line to the optical error during up to the first 25 seconds of labeled rest after initialization. The reported slope measures error growth in degrees per minute over that window. Timing is the median of three desktop replays per filter and trial, divided by the number of updates. It includes Python iteration and result collection and is machine-dependent.
-- These runs use six selected recordings and one fixed set of gains. Motion and acceleration profiles vary across the trials, and the observed ranking can change with other data or gains. The recordings come from the published BROAD study. This is an offline attitude-estimation benchmark for a future drone project. It contains no MPU-6050 acquisition, STM32 implementation, or flight test.
+Full-orientation error is the shortest angle between two orientations. Tilt error is the angle between their vertical directions in sensor coordinates. The drift rate is the slope of the error over up to 25 seconds of initial rest. The [timings](results/per_trial.csv) include Python iteration and result collection and use the median of three replays per filter on Windows. The [run configuration](results/run.json) records the gains and environment.
 
-## Sources
+## References
 
-- Laidig, Caruso, Cereatti, and Seel. [BROAD — A Benchmark for Robust Inertial Orientation Estimation](https://doi.org/10.3390/data6070072), 2021. [Original dataset repository](https://github.com/dlaidig/broad).
-- Madgwick. [An efficient orientation filter for inertial and inertial/magnetic sensor arrays](https://x-io.co.uk/downloads/madgwick_internal_report.pdf), 2010.
-- Mahony, Hamel, and Pflimlin. [Nonlinear Complementary Filters on the Special Orthogonal Group](https://doi.org/10.1109/TAC.2008.923738), 2008.
+- Laidig, Caruso, Cereatti, and Seel. [BROAD: A Benchmark for Robust Inertial Orientation Estimation](https://doi.org/10.3390/data6070072). [Dataset attribution and license](data/ATTRIBUTION.md).
+- Madgwick. [An efficient orientation filter for inertial and inertial/magnetic sensor arrays](https://x-io.co.uk/downloads/madgwick_internal_report.pdf).
+- Mahony, Hamel, and Pflimlin. [Nonlinear Complementary Filters on the Special Orthogonal Group](https://doi.org/10.1109/TAC.2008.923738).
