@@ -1,0 +1,19 @@
+{
+  "python": "3.14.8",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+  "timing_runs": 3,
+  "filter_gains": {
+    "Gyro-only": {},
+    "Complementary": {
+      "tau": 1.0
+    },
+    "Mahony": {
+      "kp": 1.0,
+      "ki": 0.1
+    },
+    "Madgwick": {
+      "beta": 0.035
+    }
+  }
+}
