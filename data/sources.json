@@ -1,0 +1,22 @@
+[
+  {
+    "file": "01_undisturbed_slow_rotation_A.hdf5",
+    "url": "https://raw.githubusercontent.com/dlaidig/broad/afbaa4d75c4cd7c8ca76b8145b1812312d87fb7f/data_hdf5/01_undisturbed_slow_rotation_A.hdf5",
+    "sha256": "46b3e75599d9783077d64245ddd1e898e8b3e813443aff13dc50698bc9f89ad0"
+  },
+  {
+    "file": "06_undisturbed_fast_rotation_A.hdf5",
+    "url": "https://raw.githubusercontent.com/dlaidig/broad/afbaa4d75c4cd7c8ca76b8145b1812312d87fb7f/data_hdf5/06_undisturbed_fast_rotation_A.hdf5",
+    "sha256": "064c47668570f1d8234956fe45922af2ec6ef6bbf64fd3bb27d642f745109574"
+  },
+  {
+    "file": "15_undisturbed_fast_translation_A.hdf5",
+    "url": "https://raw.githubusercontent.com/dlaidig/broad/afbaa4d75c4cd7c8ca76b8145b1812312d87fb7f/data_hdf5/15_undisturbed_fast_translation_A.hdf5",
+    "sha256": "77112d2218c27331ca41eb615450ad9cd67e8385cb0e46e5eda5b5a6d0dd2daf"
+  },
+  {
+    "file": "19_undisturbed_slow_combined_240s.hdf5",
+    "url": "https://raw.githubusercontent.com/dlaidig/broad/afbaa4d75c4cd7c8ca76b8145b1812312d87fb7f/data_hdf5/19_undisturbed_slow_combined_240s.hdf5",
+    "sha256": "cbd66c71dafed82b0daa93cdd3f1238e06aa2ca9270affce6c1cd651a15708f0"
+  }
+]

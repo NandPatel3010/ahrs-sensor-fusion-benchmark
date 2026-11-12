@@ -1,0 +1,12 @@
+[
+  {
+    "file": "24_disturbed_tapping_A.hdf5",
+    "url": "https://raw.githubusercontent.com/dlaidig/broad/afbaa4d75c4cd7c8ca76b8145b1812312d87fb7f/data_hdf5/24_disturbed_tapping_A.hdf5",
+    "sha256": "6ede0072e95814b561e2c86f8f10fe9f6c79a68a0880d4ca32578fd646ae3bfd"
+  },
+  {
+    "file": "26_disturbed_phone_vibration_A.hdf5",
+    "url": "https://raw.githubusercontent.com/dlaidig/broad/afbaa4d75c4cd7c8ca76b8145b1812312d87fb7f/data_hdf5/26_disturbed_phone_vibration_A.hdf5",
+    "sha256": "01e950a1d2c16558567f76a9cebf407bb79f65af8883a35265c79d3f3dc56c99"
+  }
+]
